@@ -27,15 +27,6 @@ class FstHeader {
         void ReadInt(void *buf, int bytes, FILE *fp);
 };
 
-typedef struct tagState
-{
-    float weight;
-    int field1;
-    int arcNum;
-    int field3;
-    int field4;
-} State, *P_State;
-
 typedef struct tagArc
 {
     int in;
@@ -44,11 +35,22 @@ typedef struct tagArc
     int dest;
 } Arc, *P_Arc;
 
+typedef struct tagState
+{
+    float weight;
+    int field1;
+    int arcNum;
+    int field3;
+    int field4;
+    P_Arc arc;
+} State, *P_State;
+
 class FstReader {
     public:
         bool Read(const char* fileName);
         ~FstReader();
     private:
+        FstHeader hdr;
         P_State state;
         P_Arc arc;
 };

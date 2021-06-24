@@ -56,7 +56,6 @@ FstHeader::~FstHeader()
 
 bool FstReader::Read(const char* fileName)
 {
-    FstHeader hdr;
     if(!hdr.Read(fileName))
     {
         return false;
@@ -78,11 +77,22 @@ bool FstReader::Read(const char* fileName)
     //Read the FST
     //20 bytes per state
     state = (P_State)malloc(hdr.numstates * sizeof(State));
-    fread(state, sizeof(State), hdr.numstates, fp);
+    for(int64 i=0; i<hdr.numstates; i++)
+    {
+        fread(&state[i], 20, 1, fp);
+    }
 
     //16 bytes per arc
     arc = (P_Arc)malloc(hdr.numarcs * sizeof(Arc));
     fread(arc, sizeof(Arc), hdr.numarcs, fp);
+
+    //Assign arcs to states
+    int64 offset = 0;
+    for(int64 i=0; i<hdr.numstates; i++)
+    {
+        state[i].arc = &arc[offset];
+        offset += state[i].arcNum;
+    }
 
     fclose(fp);
     return true;
