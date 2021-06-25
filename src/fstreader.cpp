@@ -98,6 +98,11 @@ bool FstReader::Read(const char* fileName)
     return true;
 }
 
+int FstReader::Start()
+{
+    return hdr.start;
+}
+
 FstReader::~FstReader()
 {
     SAFE_FREE(state);

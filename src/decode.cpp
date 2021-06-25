@@ -1,4 +1,5 @@
 #include "fstreader.h"
+#include "simple-decoder.h"
 
 int main(int argc, char* argv[])
 {
@@ -10,7 +11,14 @@ int main(int argc, char* argv[])
 
     char* fstFileName = argv[1];
 
+    float beam = 16.0;
+
     FstReader fstReader;
     fstReader.Read(fstFileName);
+
+    SimpleDecoder decoder(&fstReader, beam);
+
+    decoder.Decode();
+
     return 0;
 }

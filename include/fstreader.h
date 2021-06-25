@@ -1,6 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#ifndef FST_READER
+#define FST_READER
 
 #include "common.h"
 
@@ -29,10 +28,10 @@ class FstHeader {
 
 typedef struct tagArc
 {
-    int in;
-    int out;
-    float cost;
-    int dest;
+    int ilabel;
+    int olabel;
+    float weight;
+    int nextstate;
 } Arc, *P_Arc;
 
 typedef struct tagState
@@ -48,9 +47,12 @@ typedef struct tagState
 class FstReader {
     public:
         bool Read(const char* fileName);
+        int Start();
         ~FstReader();
-    private:
+    //private:
         FstHeader hdr;
         P_State state;
         P_Arc arc;
 };
+
+#endif
