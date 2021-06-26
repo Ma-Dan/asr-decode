@@ -25,6 +25,10 @@ typedef unsigned long long uint64;
 #define M_LOG_2PI 1.8378770664093454835606594728112
 #endif
 
+#ifndef FLT_EPSILON
+#define FLT_EPSILON 1.19209290e-7f
+#endif
+
 typedef struct tagMatrix
 {
     int32 cols;

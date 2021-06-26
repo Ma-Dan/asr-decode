@@ -47,6 +47,11 @@ void TransitionModel::Read(FILE* fp)
     //TODO: Check
 }
 
+int32 TransitionModel::TransitionIdToPdf(int32 trans_id) const
+{
+    return id2pdf_id[trans_id];
+}
+
 void TransitionModel::ReadTopo(FILE *fp)
 {
     char token[128];

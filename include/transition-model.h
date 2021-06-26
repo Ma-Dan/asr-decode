@@ -31,6 +31,7 @@ class TransitionModel
 {
     public:
         void Read(FILE *fp);
+        int32 TransitionIdToPdf(int32 trans_id) const;
 
     private:
         HmmTopology topo;

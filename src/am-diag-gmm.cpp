@@ -21,6 +21,11 @@ AmDiagGmm::~AmDiagGmm()
 {
 }
 
+DiagGmm& AmDiagGmm::GetPdf(int32 pdf_index) const
+{
+  return *(densities[pdf_index]);
+}
+
 DiagGmm* AmDiagGmm::ReadDiagGmm(FILE *fp)
 {
     DiagGmm *diag_gmm = new DiagGmm();

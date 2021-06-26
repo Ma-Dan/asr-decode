@@ -32,6 +32,7 @@ int main(int argc, char* argv[])
     char* fstFileName = argv[2];
     char* featureFileName = argv[3];
 
+    float acoustic_scale = 0.083333;
     float beam = 16.0;
 
     // Read Transition model and GMM AM model
@@ -61,8 +62,8 @@ int main(int argc, char* argv[])
     ReadFeature(featureFileName, &feature);
 
     // Decode feature
-    SimpleDecoder decoder(&fstReader, beam);
-    decoder.Decode();
+    SimpleDecoder decoder(&trans_model, &am_gmm, &fstReader, beam);
+    decoder.Decode(&feature, acoustic_scale);
 
     return 0;
 }

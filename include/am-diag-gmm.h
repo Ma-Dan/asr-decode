@@ -17,6 +17,7 @@ class AmDiagGmm {
     public:
         void Read(FILE *fp);
         ~AmDiagGmm();
+        DiagGmm& GetPdf(int32 pdf_index) const;
 
     private:
         vector<DiagGmm*> densities;

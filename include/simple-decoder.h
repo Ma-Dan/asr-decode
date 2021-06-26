@@ -2,6 +2,8 @@
 #define SIMPLE_DECODER
 
 #include "common.h"
+#include "transition-model.h"
+#include "am-diag-gmm.h"
 #include "fstreader.h"
 
 typedef int StateId;
@@ -26,21 +28,25 @@ typedef struct Token
 class SimpleDecoder
 {
     public:
-        SimpleDecoder(FstReader *fst, float beam);
-        bool Decode();
+        SimpleDecoder(TransitionModel *transmodel, AmDiagGmm *amgmm, FstReader *fst, float beam);
+        bool Decode(P_Matrix feature, float acoustic_scale);
 
         void InitDecoding();
-        void AdvanceDecoding();
+        void AdvanceDecoding(P_Matrix feature, float acoustic_scale);
 
     private:
+        class TransitionModel *m_transmodel;
+        class AmDiagGmm *m_amgmm;
         map<StateId, Token*> cur_toks;
         map<StateId, Token*> prev_toks;
         class FstReader *m_fst;
         float m_beam;
         int32 num_frames_decoded;
 
-        void ProcessEmitting();
+        void ProcessEmitting(P_Matrix feature, float acoustic_scale);
         void ProcessNonemitting();
+
+        float LogLikelihood(P_Matrix feature, int32 frame, int32 tid);
 
         static void ClearToks(map<StateId, Token*> &toks);
         static void PruneToks(float beam, map<StateId, Token*> *toks);
