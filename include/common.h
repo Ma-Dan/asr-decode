@@ -8,6 +8,7 @@
 #include <vector>
 #include <limits>
 #include <algorithm>
+#include <math.h>
 
 using namespace std;
 

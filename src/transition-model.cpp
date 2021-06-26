@@ -37,6 +37,14 @@ void TransitionModel::Read(FILE* fp)
         }
     }
     ReadToken(fp, token);
+    //TODO: Check token is </Triples> or </Tuples>
+    ComputeDerived();
+    ReadToken(fp, token); //<LogProbs>
+    ReadLogProbs(fp);
+    ReadToken(fp, token); //</LogProbs>
+    ReadToken(fp, token); //</TransitionModel>
+    ComputeDerivedOfProbs();
+    //TODO: Check
 }
 
 void TransitionModel::ReadTopo(FILE *fp)
@@ -85,6 +93,18 @@ void TransitionModel::ReadTopo(FILE *fp)
     }
     ReadToken(fp, token);
     //TODO: Add check
+}
+
+void TransitionModel::ReadLogProbs(FILE *fp)
+{
+    //TODO: Support other type, eg, double
+    const char *my_token = "FV";
+    char token[128];
+    ReadToken(fp, token); //FV
+    int32 size;
+    ReadBasicType(fp, &size);
+    log_probs.resize(size);
+    fread(log_probs.data(), sizeof(float), size, fp);
 }
 
 void TransitionModel::ReadIntegerVector(FILE *fp, vector<int32> *v)
@@ -151,61 +171,136 @@ void TransitionModel::ReadToken(FILE *fp, char* s)
     s[index-1] = '\0';
 }
 
-/*void TransitionModel::ComputeDerived()
+void TransitionModel::ComputeDerived()
 {
     state2id.resize(tuples.size()+2);  // indexed by transition-state, which
     // is one based, but also an entry for one past end of list.
 
     int32 cur_transition_id = 1;
     num_pdfs = 0;
-  for (int32 tstate = 1;
-      tstate <= static_cast<int32>(tuples_.size()+1);  // not a typo.
-      tstate++) {
-    state2id_[tstate] = cur_transition_id;
-    if (static_cast<size_t>(tstate) <= tuples_.size()) {
-      int32 phone = tuples_[tstate-1].phone,
-          hmm_state = tuples_[tstate-1].hmm_state,
-          forward_pdf = tuples_[tstate-1].forward_pdf,
-          self_loop_pdf = tuples_[tstate-1].self_loop_pdf;
-      num_pdfs_ = std::max(num_pdfs_, 1 + forward_pdf);
-      num_pdfs_ = std::max(num_pdfs_, 1 + self_loop_pdf);
-      const HmmTopology::HmmState &state = topo_.TopologyForPhone(phone)[hmm_state];
-      int32 my_num_ids = static_cast<int32>(state.transitions.size());
-      cur_transition_id += my_num_ids;  // # trans out of this state.
+    for (int32 tstate = 1;
+        tstate <= static_cast<int32>(tuples.size()+1);  // not a typo.
+        tstate++)
+    {
+        state2id[tstate] = cur_transition_id;
+        if (static_cast<size_t>(tstate) <= tuples.size())
+        {
+          int32 phone = tuples[tstate-1].phone,
+              hmm_state = tuples[tstate-1].hmm_state,
+              forward_pdf = tuples[tstate-1].forward_pdf,
+              self_loop_pdf = tuples[tstate-1].self_loop_pdf;
+          num_pdfs = max(num_pdfs, 1 + forward_pdf);
+          num_pdfs = max(num_pdfs, 1 + self_loop_pdf);
+          const HmmState &state = TopologyForPhone(phone)[hmm_state];
+          int32 my_num_ids = static_cast<int32>(state.transitions.size());
+          cur_transition_id += my_num_ids;  // # trans out of this state.
+        }
     }
-  }
 
-  id2state_.resize(cur_transition_id);   // cur_transition_id is #transition-ids+1.
-  id2pdf_id_.resize(cur_transition_id);
-  for (int32 tstate = 1; tstate <= static_cast<int32>(tuples_.size()); tstate++) {
-    for (int32 tid = state2id_[tstate]; tid < state2id_[tstate+1]; tid++) {
-      id2state_[tid] = tstate;
-      if (IsSelfLoop(tid))
-        id2pdf_id_[tid] = tuples_[tstate-1].self_loop_pdf;
-      else
-        id2pdf_id_[tid] = tuples_[tstate-1].forward_pdf;
+    id2state.resize(cur_transition_id);   // cur_transition_id is #transition-ids+1.
+    id2pdf_id.resize(cur_transition_id);
+    for (int32 tstate = 1; tstate <= static_cast<int32>(tuples.size()); tstate++)
+    {
+        for (int32 tid = state2id[tstate]; tid < state2id[tstate+1]; tid++)
+        {
+            id2state[tid] = tstate;
+            if (IsSelfLoop(tid))
+            {
+                id2pdf_id[tid] = tuples[tstate-1].self_loop_pdf;
+            }
+            else
+            {
+                id2pdf_id[tid] = tuples[tstate-1].forward_pdf;
+            }
+        }
     }
-  }
 
-  // The following statements put copies a large number in the region of memory
-  // past the end of the id2pdf_id_ array, while leaving the array as it was
-  // before.  The goal of this is to speed up decoding by disabling a check
-  // inside TransitionIdToPdf() that the transition-id was within the correct
-  // range.
-  int32 num_big_numbers = std::min<int32>(2000, cur_transition_id);
-  id2pdf_id_.resize(cur_transition_id + num_big_numbers,
-                    std::numeric_limits<int32>::max());
-  id2pdf_id_.resize(cur_transition_id);
+    // The following statements put copies a large number in the region of memory
+    // past the end of the id2pdf_id_ array, while leaving the array as it was
+    // before.  The goal of this is to speed up decoding by disabling a check
+    // inside TransitionIdToPdf() that the transition-id was within the correct
+    // range.
+    int32 num_big_numbers = min<int32>(2000, cur_transition_id);
+    id2pdf_id.resize(cur_transition_id + num_big_numbers,
+                      std::numeric_limits<int32>::max());
+    id2pdf_id.resize(cur_transition_id);
 }
 
 bool TransitionModel::IsSelfLoop(int32 trans_id) const {
-  KALDI_ASSERT(static_cast<size_t>(trans_id) < id2state_.size());
-  int32 trans_state = id2state_[trans_id];
-  int32 trans_index = trans_id - state2id_[trans_state];
-  const Tuple &tuple = tuples_[trans_state-1];
-  int32 phone = tuple.phone, hmm_state = tuple.hmm_state;
-  const HmmTopology::TopologyEntry &entry = topo_.TopologyForPhone(phone);
-  KALDI_ASSERT(static_cast<size_t>(hmm_state) < entry.size());
-  return (static_cast<size_t>(trans_index) < entry[hmm_state].transitions.size()
-          && entry[hmm_state].transitions[trans_index].first == hmm_state);
-}*/
+    int32 trans_state = id2state[trans_id];
+    int32 trans_index = trans_id - state2id[trans_state];
+    const Tuple &tuple = tuples[trans_state-1];
+    int32 phone = tuple.phone, hmm_state = tuple.hmm_state;
+    const TopologyEntry &entry = TopologyForPhone(phone);
+    return (static_cast<size_t>(trans_index) < entry[hmm_state].transitions.size()
+            && entry[hmm_state].transitions[trans_index].first == hmm_state);
+}
+
+const TopologyEntry& TransitionModel::TopologyForPhone(int32 phone) const
+{
+    // Will throw if phone not covered.
+    if (static_cast<size_t>(phone) >= topo.phone2idx.size() || topo.phone2idx[phone] == -1) {
+        printf("TopologyForPhone(), phone %d not covered.\n", phone);
+    }
+    return topo.entries[topo.phone2idx[phone]];
+}
+
+void TransitionModel::ComputeDerivedOfProbs()
+{
+    non_self_loop_log_probs.resize(NumTransitionStates()+1);  // this array indexed
+    //  by transition-state with nothing in zeroth element.
+    for (int32 tstate = 1; tstate <= NumTransitionStates(); tstate++)
+    {
+        int32 tid = SelfLoopOf(tstate);
+        if (tid == 0)
+        {   // no self-loop
+            non_self_loop_log_probs[tstate] = 0.0;  // log(1.0)
+        }
+        else
+        {
+            float self_loop_prob = expf(GetTransitionLogProb(tid)),
+                  non_self_loop_prob = 1.0 - self_loop_prob;
+            if (non_self_loop_prob <= 0.0)
+            {
+                printf("ComputeDerivedOfProbs(): non-self-loop prob is %f\n", non_self_loop_prob);
+                non_self_loop_prob = 1.0e-10;  // just so we can continue...
+            }
+            non_self_loop_log_probs[tstate] = logf(non_self_loop_prob);  // will be negative.
+        }
+  }
+}
+
+int32 TransitionModel::SelfLoopOf(int32 trans_state) const
+{   // returns the self-loop transition-id
+    const Tuple &tuple = tuples[trans_state-1];
+    // or zero if does not exist.
+    int32 phone = tuple.phone, hmm_state = tuple.hmm_state;
+    const TopologyEntry &entry = TopologyForPhone(phone);
+
+    for (int32 trans_index = 0;
+        trans_index < static_cast<int32>(entry[hmm_state].transitions.size());
+        trans_index++)
+    {
+        if (entry[hmm_state].transitions[trans_index].first == hmm_state)
+        {
+            return PairToTransitionId(trans_state, trans_index);
+        }
+    }
+
+    return 0;  // invalid transition id.
+}
+
+float TransitionModel::GetTransitionLogProb(int32 trans_id) const
+{
+  return log_probs[trans_id];
+}
+
+int32 TransitionModel::PairToTransitionId(int32 trans_state, int32 trans_index) const
+{
+    return state2id[trans_state] + trans_index;
+}
+
+int32 TransitionModel::NumTransitionStates()
+{
+    return tuples.size();
+}

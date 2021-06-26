@@ -10,11 +10,12 @@ typedef struct tagHmmState
     vector<pair<int32, float> > transitions;
 } HmmState, *P_HmmState;
 
+typedef vector<HmmState> TopologyEntry;
+
 typedef struct tagHmmTopology
 {
     vector<int32> phones;
     vector<int32> phone2idx;
-    typedef vector<HmmState> TopologyEntry;
     vector<TopologyEntry> entries;
 } HmmTopology, *P_HmmTopology;
 
@@ -42,12 +43,20 @@ class TransitionModel
         int32 num_pdfs;
 
         void ReadTopo(FILE *fp);
+        void ReadLogProbs(FILE *fp);
         void ReadIntegerVector(FILE *fp, vector<int32> *v);
         void ReadBasicType(FILE *fp, int32 *t);
         void ReadBasicType(FILE *fp, float *t);
         void ReadToken(FILE *fp, char* s);
 
         void ComputeDerived();
+        bool IsSelfLoop(int32 trans_id) const;
+        const TopologyEntry& TopologyForPhone(int32 phone) const;
+        void ComputeDerivedOfProbs();
+        int32 SelfLoopOf(int32 trans_state) const;
+        float GetTransitionLogProb(int32 trans_id) const;
+        int32 PairToTransitionId(int32 trans_state, int32 trans_index) const;
+        int32 NumTransitionStates();
 };
 
 #endif
