@@ -16,7 +16,7 @@ static void TokenDelete(Token *tok)
 
 static float GetDecodeArcWeight(P_DecodeArc arc)
 {
-    return arc->weight1;// + arc->weight2;
+    return arc->weight1 + arc->weight2;
 }
 
 static P_Token newToken(P_DecodeArc arc, float acoustic_cost, Token *prev)
@@ -105,6 +105,41 @@ bool SimpleDecoder::Decode(P_Matrix feature, float acoustic_scale)
     InitDecoding();
     AdvanceDecoding(feature, acoustic_scale);
     return (!cur_toks.empty());
+}
+
+vector<int> SimpleDecoder::GetBestPath()
+{
+    Token* best_token;
+    float best_cost = std::numeric_limits<double>::infinity();
+
+    for(map<StateId, Token*>::iterator iter = cur_toks.begin();
+        iter != cur_toks.end(); ++iter)
+    {
+        if(best_cost > iter->second->cost)
+        {
+            best_cost = iter->second->cost;
+            best_token = iter->second;
+        }
+    }
+
+    vector<int> result_rev;
+    Token* path = best_token;
+    while(path != NULL)
+    {
+        if(path->arc.olabel != 0)
+        {
+            result_rev.push_back(path->arc.olabel);
+        }
+        path = path->prev;
+    }
+
+    vector<int> result;
+    for(int i=result_rev.size()-1; i>=0; i--)
+    {
+        result.push_back(result_rev[i]);
+    }
+
+    return result;
 }
 
 void SimpleDecoder::AdvanceDecoding(P_Matrix feature, float acoustic_scale)

@@ -65,5 +65,14 @@ int main(int argc, char* argv[])
     SimpleDecoder decoder(&trans_model, &am_gmm, &fstReader, beam);
     decoder.Decode(&feature, acoustic_scale);
 
+    vector<int> result = decoder.GetBestPath();
+
+    printf("Decoded result: ");
+    for(int i=0; i<result.size(); i++)
+    {
+        printf("%d ", result[i]);
+    }
+    printf("\n");
+
     return 0;
 }

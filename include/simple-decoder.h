@@ -30,6 +30,7 @@ class SimpleDecoder
     public:
         SimpleDecoder(TransitionModel *transmodel, AmDiagGmm *amgmm, FstReader *fst, float beam);
         bool Decode(P_Matrix feature, float acoustic_scale);
+        vector<int> GetBestPath();
 
         void InitDecoding();
         void AdvanceDecoding(P_Matrix feature, float acoustic_scale);
