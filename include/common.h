@@ -21,4 +21,23 @@ typedef unsigned long long uint64;
 
 #define SAFE_FREE(x) if(x) {free(x); x=NULL;}
 
+#ifndef M_LOG_2PI
+#define M_LOG_2PI 1.8378770664093454835606594728112
+#endif
+
+typedef struct tagMatrix
+{
+    int32 cols;
+    int32 rows;
+    int32 stride;
+    vector<float> data;
+} Matrix, P_Matrix;
+
+void ReadToken(FILE *fp, char* s);
+void ReadIntegerVector(FILE *fp, vector<int32> *v);
+void ReadBasicType(FILE *fp, int32 *t);
+void ReadBasicType(FILE *fp, float *t);
+void ReadFloatVectors(FILE *fp, vector<float> *v);
+void ReadFloatMatrix(FILE *fp, P_Matrix *m);
+
 #endif

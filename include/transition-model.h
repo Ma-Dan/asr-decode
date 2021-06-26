@@ -43,11 +43,6 @@ class TransitionModel
         int32 num_pdfs;
 
         void ReadTopo(FILE *fp);
-        void ReadLogProbs(FILE *fp);
-        void ReadIntegerVector(FILE *fp, vector<int32> *v);
-        void ReadBasicType(FILE *fp, int32 *t);
-        void ReadBasicType(FILE *fp, float *t);
-        void ReadToken(FILE *fp, char* s);
 
         void ComputeDerived();
         bool IsSelfLoop(int32 trans_id) const;

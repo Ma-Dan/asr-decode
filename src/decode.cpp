@@ -1,4 +1,5 @@
 #include "transition-model.h"
+#include "am-diag-gmm.h"
 #include "fstreader.h"
 #include "simple-decoder.h"
 
@@ -27,6 +28,9 @@ int main(int argc, char* argv[])
     }
     TransitionModel trans_model;
     trans_model.Read(fpMdl);
+
+    AmDiagGmm am_gmm;
+    am_gmm.Read(fpMdl);
 
     fclose(fpMdl);
 

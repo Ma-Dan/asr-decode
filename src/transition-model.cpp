@@ -40,7 +40,7 @@ void TransitionModel::Read(FILE* fp)
     //TODO: Check token is </Triples> or </Tuples>
     ComputeDerived();
     ReadToken(fp, token); //<LogProbs>
-    ReadLogProbs(fp);
+    ReadFloatVectors(fp, &log_probs);
     ReadToken(fp, token); //</LogProbs>
     ReadToken(fp, token); //</TransitionModel>
     ComputeDerivedOfProbs();
@@ -93,82 +93,6 @@ void TransitionModel::ReadTopo(FILE *fp)
     }
     ReadToken(fp, token);
     //TODO: Add check
-}
-
-void TransitionModel::ReadLogProbs(FILE *fp)
-{
-    //TODO: Support other type, eg, double
-    const char *my_token = "FV";
-    char token[128];
-    ReadToken(fp, token); //FV
-    int32 size;
-    ReadBasicType(fp, &size);
-    log_probs.resize(size);
-    fread(log_probs.data(), sizeof(float), size, fp);
-}
-
-void TransitionModel::ReadIntegerVector(FILE *fp, vector<int32> *v)
-{
-    uint8 size = 0;
-    fread(&size, sizeof(size), 1, fp);
-
-    if(size != sizeof(int32))
-    {
-        printf("vector size error!\n");
-        return;
-    }
-
-    uint32 vsize = 0;
-    fread(&vsize, sizeof(vsize), 1, fp);
-
-    int32 value;
-    for(int i=0; i<vsize; i++)
-    {
-        fread(&value, sizeof(value), 1, fp);
-        v->push_back(value);
-    }
-}
-
-void TransitionModel::ReadBasicType(FILE *fp, int32 *t)
-{
-    uint8 size = 0;
-    fread(&size, sizeof(size), 1, fp);
-
-    if(size != sizeof(int32))
-    {
-        printf("int32 size error!\n");
-        return;
-    }
-
-    fread(t, sizeof(*t), 1, fp);
-}
-
-void TransitionModel::ReadBasicType(FILE *fp, float *t)
-{
-    uint8 size = 0;
-    fread(&size, sizeof(size), 1, fp);
-
-    if(size != sizeof(float))
-    {
-        printf("float size error!\n");
-        return;
-    }
-
-    fread(t, sizeof(*t), 1, fp);
-}
-
-void TransitionModel::ReadToken(FILE *fp, char* s)
-{
-    int index = 0;
-    char c = '\0';
-    while(c != ' ')
-    {
-        fread(&c, 1, 1, fp);
-        s[index] = c;
-        index++;
-    }
-
-    s[index-1] = '\0';
 }
 
 void TransitionModel::ComputeDerived()
