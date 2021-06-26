@@ -31,13 +31,14 @@ typedef struct tagMatrix
     int32 rows;
     int32 stride;
     vector<float> data;
-} Matrix, P_Matrix;
+} Matrix, *P_Matrix;
 
 void ReadToken(FILE *fp, char* s);
 void ReadIntegerVector(FILE *fp, vector<int32> *v);
 void ReadBasicType(FILE *fp, int32 *t);
 void ReadBasicType(FILE *fp, float *t);
 void ReadFloatVectors(FILE *fp, vector<float> *v);
-void ReadFloatMatrix(FILE *fp, P_Matrix *m);
+void ReadFloatMatrix(FILE *fp, P_Matrix m);
+float ReadMatrix(P_Matrix m, int32 row, int32 col);
 
 #endif

@@ -70,8 +70,8 @@ int32 AmDiagGmm::ComputeGconsts(DiagGmm* diaggmm) {
         float gc = logf(diaggmm->weights[mix]) + offset;  // May be -inf if weights == 0
         for (int32 d = 0; d < dim; d++)
         {
-            gc += 0.5 * logf(diaggmm->inv_vars.data[diaggmm->inv_vars.cols*mix+d]) - 0.5 * diaggmm->means_invvars.data[diaggmm->means_invvars.cols*mix+d]
-                  * diaggmm->means_invvars.data[diaggmm->means_invvars.cols*mix+d] / diaggmm->inv_vars.data[diaggmm->inv_vars.cols*mix+d];
+            gc += 0.5 * logf(ReadMatrix(&diaggmm->inv_vars, mix, d)) - 0.5 * ReadMatrix(&diaggmm->means_invvars, mix, d)
+                  * ReadMatrix(&diaggmm->means_invvars, mix, d) / ReadMatrix(&diaggmm->inv_vars, mix, d);
         }
         // Change sign for logdet because var is inverted. Also, note that
         // mean_invvars(mix, d)*mean_invvars(mix, d)/inv_vars(mix, d) is the

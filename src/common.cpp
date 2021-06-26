@@ -76,7 +76,7 @@ void ReadFloatVectors(FILE *fp, vector<float> *v)
     fread(v->data(), sizeof(float), size, fp);
 }
 
-void ReadFloatMatrix(FILE *fp, P_Matrix *m)
+void ReadFloatMatrix(FILE *fp, P_Matrix m)
 {
     const char *my_token = "FM";
     char token[128];
@@ -95,4 +95,9 @@ void ReadFloatMatrix(FILE *fp, P_Matrix *m)
     int32 size = rows * cols;
     m->data.resize(size);
     fread(m->data.data(), sizeof(float), size, fp);
+}
+
+float ReadMatrix(P_Matrix m, int32 row, int32 col)
+{
+    return m->data[m->cols*row+col];
 }
