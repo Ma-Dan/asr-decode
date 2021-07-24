@@ -61,7 +61,7 @@ DiagGmm* AmDiagGmm::ReadDiagGmm(FILE *fp)
 int32 AmDiagGmm::ComputeGconsts(DiagGmm* diaggmm) {
     int32 num_mix = NumGauss(diaggmm);
     int32 dim = Dim(diaggmm);
-    float offset = -0.5 * M_LOG_2PI * dim;  // constant term in gconst.
+    BaseFloat offset = -0.5 * M_LOG_2PI * dim;  // constant term in gconst.
     int32 num_bad = 0;
 
     // Resize if Gaussians have been removed during Update()
@@ -72,7 +72,7 @@ int32 AmDiagGmm::ComputeGconsts(DiagGmm* diaggmm) {
 
     for (int32 mix = 0; mix < num_mix; mix++)
     {
-        float gc = logf(diaggmm->weights[mix]) + offset;  // May be -inf if weights == 0
+        BaseFloat gc = logf(diaggmm->weights[mix]) + offset;  // May be -inf if weights == 0
         for (int32 d = 0; d < dim; d++)
         {
             gc += 0.5 * logf(ReadMatrix(&diaggmm->inv_vars, mix, d)) - 0.5 * ReadMatrix(&diaggmm->means_invvars, mix, d)

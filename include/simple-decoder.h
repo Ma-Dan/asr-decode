@@ -12,8 +12,8 @@ typedef struct tagDecodeArc
 {
     int ilabel;
     int olabel;
-    float weight1;
-    float weight2;
+    BaseFloat weight1;
+    BaseFloat weight2;
     int nextstate;
 } DecodeArc, *P_DecodeArc;
 
@@ -28,12 +28,12 @@ typedef struct Token
 class SimpleDecoder
 {
     public:
-        SimpleDecoder(TransitionModel *transmodel, AmDiagGmm *amgmm, FstReader *fst, float beam);
-        bool Decode(P_Matrix feature, float acoustic_scale);
+        SimpleDecoder(TransitionModel *transmodel, AmDiagGmm *amgmm, FstReader *fst, BaseFloat beam);
+        bool Decode(P_Matrix feature, BaseFloat acoustic_scale);
         vector<int> GetBestPath();
 
         void InitDecoding();
-        void AdvanceDecoding(P_Matrix feature, float acoustic_scale);
+        void AdvanceDecoding(P_Matrix feature, BaseFloat acoustic_scale);
 
     private:
         class TransitionModel *m_transmodel;
@@ -41,16 +41,16 @@ class SimpleDecoder
         map<StateId, Token*> cur_toks;
         map<StateId, Token*> prev_toks;
         class FstReader *m_fst;
-        float m_beam;
+        BaseFloat m_beam;
         int32 num_frames_decoded;
 
-        void ProcessEmitting(P_Matrix feature, float acoustic_scale);
+        void ProcessEmitting(P_Matrix feature, BaseFloat acoustic_scale);
         void ProcessNonemitting();
 
-        float LogLikelihood(P_Matrix feature, int32 frame, int32 tid);
+        BaseFloat LogLikelihood(P_Matrix feature, int32 frame, int32 tid);
 
         static void ClearToks(map<StateId, Token*> &toks);
-        static void PruneToks(float beam, map<StateId, Token*> *toks);
+        static void PruneToks(BaseFloat beam, map<StateId, Token*> *toks);
 };
 
 #endif

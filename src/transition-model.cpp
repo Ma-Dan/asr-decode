@@ -187,7 +187,7 @@ void TransitionModel::ComputeDerivedOfProbs()
         }
         else
         {
-            float self_loop_prob = expf(GetTransitionLogProb(tid)),
+            BaseFloat self_loop_prob = expf(GetTransitionLogProb(tid)),
                   non_self_loop_prob = 1.0 - self_loop_prob;
             if (non_self_loop_prob <= 0.0)
             {
@@ -196,7 +196,7 @@ void TransitionModel::ComputeDerivedOfProbs()
             }
             non_self_loop_log_probs[tstate] = logf(non_self_loop_prob);  // will be negative.
         }
-  }
+    }
 }
 
 int32 TransitionModel::SelfLoopOf(int32 trans_state) const
@@ -219,7 +219,7 @@ int32 TransitionModel::SelfLoopOf(int32 trans_state) const
     return 0;  // invalid transition id.
 }
 
-float TransitionModel::GetTransitionLogProb(int32 trans_id) const
+BaseFloat TransitionModel::GetTransitionLogProb(int32 trans_id) const
 {
   return log_probs[trans_id];
 }

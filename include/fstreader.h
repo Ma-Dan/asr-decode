@@ -25,13 +25,13 @@ typedef struct tagArc
 {
     int ilabel;
     int olabel;
-    float weight;
+    BaseFloat weight;
     int nextstate;
 } Arc, *P_Arc;
 
 typedef struct tagState
 {
-    float weight;
+    BaseFloat weight;
     int field1;
     int arcNum;
     int field3;

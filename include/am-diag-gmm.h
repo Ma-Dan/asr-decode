@@ -6,9 +6,9 @@
 class DiagGmm
 {
     public:
-        vector<float> gconsts;
+        vector<BaseFloat> gconsts;
         bool valid_gconsts;
-        vector<float> weights;
+        vector<BaseFloat> weights;
         Matrix inv_vars;
         Matrix means_invvars;
 };

@@ -50,12 +50,12 @@ void ReadBasicType(FILE *fp, int32 *t)
     fread(t, sizeof(*t), 1, fp);
 }
 
-void ReadBasicType(FILE *fp, float *t)
+void ReadBasicType(FILE *fp, BaseFloat *t)
 {
     uint8 size = 0;
     fread(&size, sizeof(size), 1, fp);
 
-    if(size != sizeof(float))
+    if(size != sizeof(BaseFloat))
     {
         printf("float size error!\n");
         return;
@@ -64,7 +64,7 @@ void ReadBasicType(FILE *fp, float *t)
     fread(t, sizeof(*t), 1, fp);
 }
 
-void ReadFloatVectors(FILE *fp, vector<float> *v)
+void ReadFloatVectors(FILE *fp, vector<BaseFloat> *v)
 {
     //TODO: Support other type, eg, double
     const char *my_token = "FV";
@@ -73,7 +73,7 @@ void ReadFloatVectors(FILE *fp, vector<float> *v)
     int32 size;
     ReadBasicType(fp, &size);
     v->resize(size);
-    fread(v->data(), sizeof(float), size, fp);
+    fread(v->data(), sizeof(BaseFloat), size, fp);
 }
 
 void ReadFloatMatrix(FILE *fp, P_Matrix m)
@@ -89,15 +89,15 @@ void ReadFloatMatrix(FILE *fp, P_Matrix m)
     m->rows = rows;
     m->cols = cols;
 
-    int32 skip = ((16 / sizeof(float)) - cols % (16 / sizeof(float))) % (16 / sizeof(float));
+    int32 skip = ((16 / sizeof(BaseFloat)) - cols % (16 / sizeof(BaseFloat))) % (16 / sizeof(BaseFloat));
     m->stride = cols + skip;
 
     int32 size = rows * cols;
     m->data.resize(size);
-    fread(m->data.data(), sizeof(float), size, fp);
+    fread(m->data.data(), sizeof(BaseFloat), size, fp);
 }
 
-float ReadMatrix(P_Matrix m, int32 row, int32 col)
+BaseFloat ReadMatrix(P_Matrix m, int32 row, int32 col)
 {
     return m->data[m->cols*row+col];
 }

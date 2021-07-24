@@ -14,12 +14,12 @@ static void TokenDelete(Token *tok)
     }
 }
 
-static float GetDecodeArcWeight(P_DecodeArc arc)
+static BaseFloat GetDecodeArcWeight(P_DecodeArc arc)
 {
     return arc->weight1 + arc->weight2;
 }
 
-static P_Token newToken(P_DecodeArc arc, float acoustic_cost, Token *prev)
+static P_Token newToken(P_DecodeArc arc, BaseFloat acoustic_cost, Token *prev)
 {
     P_Token token = (P_Token)malloc(sizeof(Token));
 
@@ -45,7 +45,7 @@ static P_Token newToken(P_DecodeArc arc, float acoustic_cost, Token *prev)
     return token;
 }
 
-static P_Token newToken(P_Arc arc, float acoustic_cost, Token *prev)
+static P_Token newToken(P_Arc arc, BaseFloat acoustic_cost, Token *prev)
 {
     P_Token token = (P_Token)malloc(sizeof(Token));
 
@@ -71,7 +71,7 @@ static P_Token newToken(P_Arc arc, float acoustic_cost, Token *prev)
     return token;
 }
 
-SimpleDecoder::SimpleDecoder(TransitionModel *transmodel, AmDiagGmm *amgmm, FstReader *fst, float beam)
+SimpleDecoder::SimpleDecoder(TransitionModel *transmodel, AmDiagGmm *amgmm, FstReader *fst, BaseFloat beam)
 {
     m_transmodel = transmodel;
     m_amgmm = amgmm;
@@ -100,7 +100,7 @@ void SimpleDecoder::InitDecoding()
     ProcessNonemitting();
 }
 
-bool SimpleDecoder::Decode(P_Matrix feature, float acoustic_scale)
+bool SimpleDecoder::Decode(P_Matrix feature, BaseFloat acoustic_scale)
 {
     InitDecoding();
     AdvanceDecoding(feature, acoustic_scale);
@@ -110,7 +110,7 @@ bool SimpleDecoder::Decode(P_Matrix feature, float acoustic_scale)
 vector<int> SimpleDecoder::GetBestPath()
 {
     Token* best_token;
-    float best_cost = std::numeric_limits<double>::infinity();
+    BaseFloat best_cost = std::numeric_limits<double>::infinity();
 
     for(map<StateId, Token*>::iterator iter = cur_toks.begin();
         iter != cur_toks.end(); ++iter)
@@ -142,7 +142,7 @@ vector<int> SimpleDecoder::GetBestPath()
     return result;
 }
 
-void SimpleDecoder::AdvanceDecoding(P_Matrix feature, float acoustic_scale)
+void SimpleDecoder::AdvanceDecoding(P_Matrix feature, BaseFloat acoustic_scale)
 {
     while (num_frames_decoded < feature->rows)
     {
@@ -155,12 +155,12 @@ void SimpleDecoder::AdvanceDecoding(P_Matrix feature, float acoustic_scale)
     }
 }
 
-void SimpleDecoder::ProcessEmitting(P_Matrix feature, float acoustic_scale)
+void SimpleDecoder::ProcessEmitting(P_Matrix feature, BaseFloat acoustic_scale)
 {
     int32 frame = num_frames_decoded;
     // Processes emitting arcs for one frame.  Propagates from
     // prev_toks_ to cur_toks_.
-    double cutoff = numeric_limits<float>::infinity();
+    double cutoff = numeric_limits<BaseFloat>::infinity();
     for(map<StateId, Token*>::iterator iter = prev_toks.begin();
        iter != prev_toks.end();
        ++iter)
@@ -173,7 +173,7 @@ void SimpleDecoder::ProcessEmitting(P_Matrix feature, float acoustic_scale)
             if(arc->ilabel != 0)
             {
                 // propagate..
-                float acoustic_cost = -acoustic_scale * LogLikelihood(feature, frame, arc->ilabel);
+                BaseFloat acoustic_cost = -acoustic_scale * LogLikelihood(feature, frame, arc->ilabel);
                 double total_cost = tok->cost + arc->weight + acoustic_cost;
 
                 if(total_cost >= cutoff)
@@ -237,7 +237,7 @@ void SimpleDecoder::ProcessNonemitting()
 
             if(arc->ilabel == 0)
             {   // propagate nonemitting only...
-                const float acoustic_cost = 0.0;
+                const BaseFloat acoustic_cost = 0.0;
                 Token *new_tok = newToken(arc, acoustic_cost, tok);
                 if(new_tok->cost > cutoff)
                 {
@@ -270,11 +270,11 @@ void SimpleDecoder::ProcessNonemitting()
     }
 }
 
-static const float kMinLogDiffFloat = logf(FLT_EPSILON);
+static const BaseFloat kMinLogDiffFloat = logf(FLT_EPSILON);
 
-float LogSumExp(vector<float> input, float prune)
+BaseFloat LogSumExp(vector<BaseFloat> input, BaseFloat prune)
 {
-    float max_elem = input[0];
+    BaseFloat max_elem = input[0];
     for(int i=1; i<input.size(); i++)
     {
         if(max_elem < input[i])
@@ -282,7 +282,7 @@ float LogSumExp(vector<float> input, float prune)
             max_elem = input[i];
         }
     }
-    float cutoff;
+    BaseFloat cutoff;
     cutoff = max_elem + kMinLogDiffFloat;
     if (prune > 0.0 && max_elem - prune > cutoff) // explicit pruning...
     {
@@ -293,7 +293,7 @@ float LogSumExp(vector<float> input, float prune)
 
     for(int i = 0; i < input.size(); i++)
     {
-        float f = input[i];
+        BaseFloat f = input[i];
         if (f >= cutoff)
         {
             sum_relto_max_elem += expf(f - max_elem);
@@ -302,22 +302,22 @@ float LogSumExp(vector<float> input, float prune)
     return max_elem + logf(sum_relto_max_elem);
 }
 
-float SimpleDecoder::LogLikelihood(P_Matrix feature, int32 frame, int32 tid)
+BaseFloat SimpleDecoder::LogLikelihood(P_Matrix feature, int32 frame, int32 tid)
 {
     int32 state = m_transmodel->TransitionIdToPdf(tid);
 
-    vector<float> data;
-    vector<float> data_squared;
+    vector<BaseFloat> data;
+    vector<BaseFloat> data_squared;
     for(int i=0; i<feature->cols; i++)
     {
-        float v = ReadMatrix(feature, frame, i);
+        BaseFloat v = ReadMatrix(feature, frame, i);
         data.push_back(v);
         data_squared.push_back(v*v);
     }
 
     DiagGmm& pdf = m_amgmm->GetPdf(state);
 
-    vector<float> loglikes;
+    vector<BaseFloat> loglikes;
     for(int i=0; i<pdf.gconsts.size(); i++)
     {
         loglikes.push_back(pdf.gconsts[i]);
@@ -325,7 +325,7 @@ float SimpleDecoder::LogLikelihood(P_Matrix feature, int32 frame, int32 tid)
 
     for(int i=0; i<loglikes.size(); i++)
     {
-        float sum = 0.0;
+        BaseFloat sum = 0.0;
         for(int j=0; j<pdf.means_invvars.cols; j++)
         {
             sum += 1.0 * data[j] * ReadMatrix(&pdf.means_invvars, i, j);
@@ -334,7 +334,7 @@ float SimpleDecoder::LogLikelihood(P_Matrix feature, int32 frame, int32 tid)
         loglikes[i] += sum;
     }
 
-    float log_sum_exp_prune = -1;
+    BaseFloat log_sum_exp_prune = -1;
 
     return LogSumExp(loglikes, log_sum_exp_prune);
 }
@@ -348,7 +348,7 @@ void SimpleDecoder::ClearToks(map<StateId, Token*> &toks) {
     toks.clear();
 }
 
-void SimpleDecoder::PruneToks(float beam, map<StateId, Token*> *toks)
+void SimpleDecoder::PruneToks(BaseFloat beam, map<StateId, Token*> *toks)
 {
     if(toks->empty())
     {

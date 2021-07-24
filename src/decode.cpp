@@ -15,7 +15,7 @@ void ReadFeature(const char* fileName, P_Matrix feature)
     feature->data.resize(feature->rows * feature->cols);
     fseek(fp, 31, SEEK_SET);
 
-    fread(feature->data.data(), sizeof(float), feature->rows * feature->cols, fp);
+    fread(feature->data.data(), sizeof(BaseFloat), feature->rows * feature->cols, fp);
 
     fclose(fp);
 }
@@ -32,8 +32,8 @@ int main(int argc, char* argv[])
     char* fstFileName = argv[2];
     char* featureFileName = argv[3];
 
-    float acoustic_scale = 0.083333;
-    float beam = 16.0;
+    BaseFloat acoustic_scale = 0.083333;
+    BaseFloat beam = 16.0;
 
     // Read Transition model and GMM AM model
     FILE *fpMdl = fopen(mdlFileName, "rb");
