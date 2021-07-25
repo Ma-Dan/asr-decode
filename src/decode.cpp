@@ -1,3 +1,4 @@
+#include "wavereader.h"
 #include "transition-model.h"
 #include "am-diag-gmm.h"
 #include "fstreader.h"
@@ -22,7 +23,7 @@ void ReadFeature(const char* fileName, P_Matrix feature)
 
 int main(int argc, char* argv[])
 {
-    if(argc < 4)
+    if(argc < 5)
     {
         printf("arg error\n");
         return -1;
@@ -31,6 +32,7 @@ int main(int argc, char* argv[])
     char* mdlFileName = argv[1];
     char* fstFileName = argv[2];
     char* featureFileName = argv[3];
+    char* waveFileName = argv[4];
 
     BaseFloat acoustic_scale = 0.083333;
     BaseFloat beam = 16.0;
@@ -60,6 +62,10 @@ int main(int argc, char* argv[])
     // Read feature
     Matrix feature;
     ReadFeature(featureFileName, &feature);
+
+    // Read wave file
+    WaveReader waveReader;
+    waveReader.ReadWaveFile(waveFileName);
 
     // Decode feature
     SimpleDecoder decoder(&trans_model, &am_gmm, &fstReader, beam);
