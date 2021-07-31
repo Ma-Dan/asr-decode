@@ -373,17 +373,23 @@ MfccComputer::~MfccComputer()
     delete srfft;
 }
 
-void MfccComputer::ComputeFeatures(const vector<BaseFloat> &wave, BaseFloat sample_freq, BaseFloat vtln_warp, vector<BaseFloat* > &output)
+void MfccComputer::ComputeFeatures(const vector<BaseFloat> &wave, BaseFloat sample_freq, BaseFloat vtln_warp, P_Matrix output)
 {
     int32 rows_out = NumFrames(wave.size());
     int32 cols_out = mfccOptions.num_ceps;
 
-    output.resize(rows_out, NULL);
+    output->rows = rows_out;
+    output->cols = cols_out;
+
+    int32 skip = ((16 / sizeof(BaseFloat)) - cols_out % (16 / sizeof(BaseFloat))) % (16 / sizeof(BaseFloat));
+    output->stride = cols_out + skip;
+
+    output->data.resize(rows_out * cols_out);
 
     vector<BaseFloat> window;  // windowed waveform.
     for (int32 frame = 0; frame < rows_out; ++frame)
     {
-        ExtractWindow(wave, frame, vtln_warp, window, output[frame]);
+        ExtractWindow(wave, frame, vtln_warp, window, output->data.data()+frame*cols_out);
     }
 }
 
@@ -455,8 +461,6 @@ void MfccComputer::ProcessWindow(vector<BaseFloat> window, BaseFloat vtln_warp, 
 
     ApplyFloor(mel_energies_, std::numeric_limits<float>::epsilon());
     ApplyLog(mel_energies_);
-
-    output = (BaseFloat*)malloc(mfccOptions.num_ceps * sizeof(BaseFloat));
 
     for(int32 i=0; i<mfccOptions.num_ceps; i++)
     {

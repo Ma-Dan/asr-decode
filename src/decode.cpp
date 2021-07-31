@@ -3,6 +3,7 @@
 #include "am-diag-gmm.h"
 #include "fstreader.h"
 #include "feature-mfcc.h"
+#include "compressed-matrix.h"
 #include "simple-decoder.h"
 
 void ReadFeature(const char* fileName, P_Matrix feature)
@@ -72,8 +73,12 @@ int main(int argc, char* argv[])
 
     // Compute MFCC
     MfccComputer mfccComputer;
-    vector<BaseFloat *> feats;
-    mfccComputer.ComputeFeatures(waveReader.m_waveData, waveReader.m_wavefile.header.sample_rate, vtln_warp, feats);
+    Matrix feats;
+    mfccComputer.ComputeFeatures(waveReader.m_waveData, waveReader.m_wavefile.header.sample_rate, vtln_warp, &feats);
+
+    CompressedMatrix compressedMatrix;
+    compressedMatrix.CopyFromMat(&feats);
+    compressedMatrix.CopyToMat(&feats);
 
     // Decode feature
     SimpleDecoder decoder(&trans_model, &am_gmm, &fstReader, beam);

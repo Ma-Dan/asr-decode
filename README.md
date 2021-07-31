@@ -8,7 +8,7 @@
 
 ## 使用
 ```shell
-./bin/main ./model/final.mdl ./model/HCLG.fst ./data/feat.ark
+./bin/main ./model/final.mdl ./model/HCLG.fst ./data/feat.ark ./data/1_0_0_0_0_0_0_0.wav
 ```
 备注:
 1. model文件来源于yesno的基础示例

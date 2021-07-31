@@ -143,7 +143,7 @@ class MfccComputer
     public:
         MfccComputer();
         ~MfccComputer();
-        void ComputeFeatures(const vector<BaseFloat> &wave, BaseFloat sample_freq, BaseFloat vtln_warp, vector<BaseFloat* > &output);
+        void ComputeFeatures(const vector<BaseFloat> &wave, BaseFloat sample_freq, BaseFloat vtln_warp, P_Matrix output);
 
     private:
         int32 NumFrames(int64 num_samples);
