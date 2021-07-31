@@ -5,28 +5,12 @@
 #include "feature-mfcc.h"
 #include "compressed-matrix.h"
 #include "compute-cmvn-stats.h"
+#include "add-deltas.h"
 #include "simple-decoder.h"
-
-void ReadFeature(const char* fileName, P_Matrix feature)
-{
-    FILE *fp = fopen(fileName, "rb");
-
-    //Hard-coded to read one feature
-    feature->rows = 668;
-    feature->cols = 39;
-    feature->stride = 40;
-
-    feature->data.resize(feature->rows * feature->cols);
-    fseek(fp, 31, SEEK_SET);
-
-    fread(feature->data.data(), sizeof(BaseFloat), feature->rows * feature->cols, fp);
-
-    fclose(fp);
-}
 
 int main(int argc, char* argv[])
 {
-    if(argc < 5)
+    if(argc < 4)
     {
         printf("arg error\n");
         return -1;
@@ -34,8 +18,7 @@ int main(int argc, char* argv[])
 
     char* mdlFileName = argv[1];
     char* fstFileName = argv[2];
-    char* featureFileName = argv[3];
-    char* waveFileName = argv[4];
+    char* waveFileName = argv[3];
 
     BaseFloat vtln_warp = 1.0;
 
@@ -64,10 +47,6 @@ int main(int argc, char* argv[])
     FstReader fstReader;
     fstReader.Read(fstFileName);
 
-    // Read feature
-    Matrix feature;
-    ReadFeature(featureFileName, &feature);
-
     // Read wave file
     WaveReader waveReader;
     waveReader.ReadWaveFile(waveFileName);
@@ -87,6 +66,11 @@ int main(int argc, char* argv[])
     InitCmvnStats(feats.cols, &cmvn_stats);
     AccCmvnStats(&feats, &cmvn_stats);
     ApplyCmvn(&cmvn_stats, false, &feats);
+
+    // Add deltas
+    DeltaFeaturesOptions opts;
+    Matrix feature;
+    ComputeDeltas(opts, &feats, &feature);
 
     // Decode feature
     SimpleDecoder decoder(&trans_model, &am_gmm, &fstReader, beam);
