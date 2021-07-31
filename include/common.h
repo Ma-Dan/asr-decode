@@ -44,6 +44,14 @@ typedef struct tagMatrix
     vector<BaseFloat> data;
 } Matrix, *P_Matrix;
 
+typedef struct tagMatrixDouble
+{
+    int32 cols;
+    int32 rows;
+    int32 stride;
+    vector<double> data;
+} MatrixDouble, *P_MatrixDouble;
+
 void ReadToken(FILE *fp, char* s);
 void ReadIntegerVector(FILE *fp, vector<int32> *v);
 void ReadBasicType(FILE *fp, int32 *t);

@@ -4,6 +4,7 @@
 #include "fstreader.h"
 #include "feature-mfcc.h"
 #include "compressed-matrix.h"
+#include "compute-cmvn-stats.h"
 #include "simple-decoder.h"
 
 void ReadFeature(const char* fileName, P_Matrix feature)
@@ -76,9 +77,16 @@ int main(int argc, char* argv[])
     Matrix feats;
     mfccComputer.ComputeFeatures(waveReader.m_waveData, waveReader.m_wavefile.header.sample_rate, vtln_warp, &feats);
 
+    // Compress matrix
     CompressedMatrix compressedMatrix;
     compressedMatrix.CopyFromMat(&feats);
     compressedMatrix.CopyToMat(&feats);
+
+    // Compute CMVN stats and apply
+    MatrixDouble cmvn_stats;
+    InitCmvnStats(feats.cols, &cmvn_stats);
+    AccCmvnStats(&feats, &cmvn_stats);
+    ApplyCmvn(&cmvn_stats, false, &feats);
 
     // Decode feature
     SimpleDecoder decoder(&trans_model, &am_gmm, &fstReader, beam);

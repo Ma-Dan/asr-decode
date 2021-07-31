@@ -1,4 +1,4 @@
-CXX = clang++
+CXX = g++
 CXXFLAGS = -std=c++11 --debug
 INCLUDE	= -I/usr/local/include -I./include
 LDFLAGS = -std=c++11
