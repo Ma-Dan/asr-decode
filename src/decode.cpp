@@ -2,6 +2,7 @@
 #include "transition-model.h"
 #include "am-diag-gmm.h"
 #include "fstreader.h"
+#include "feature-mfcc.h"
 #include "simple-decoder.h"
 
 void ReadFeature(const char* fileName, P_Matrix feature)
@@ -33,6 +34,8 @@ int main(int argc, char* argv[])
     char* fstFileName = argv[2];
     char* featureFileName = argv[3];
     char* waveFileName = argv[4];
+
+    BaseFloat vtln_warp = 1.0;
 
     BaseFloat acoustic_scale = 0.083333;
     BaseFloat beam = 16.0;
@@ -66,6 +69,11 @@ int main(int argc, char* argv[])
     // Read wave file
     WaveReader waveReader;
     waveReader.ReadWaveFile(waveFileName);
+
+    // Compute MFCC
+    MfccComputer mfccComputer;
+    vector<BaseFloat *> feats;
+    mfccComputer.ComputeFeatures(waveReader.m_waveData, waveReader.m_wavefile.header.sample_rate, vtln_warp, feats);
 
     // Decode feature
     SimpleDecoder decoder(&trans_model, &am_gmm, &fstReader, beam);

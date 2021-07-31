@@ -24,6 +24,10 @@ typedef float BaseFloat;
 
 #define SAFE_FREE(x) if(x) {free(x); x=NULL;}
 
+#ifndef M_2PI
+#define M_2PI 6.283185307179586476925286766559005
+#endif
+
 #ifndef M_LOG_2PI
 #define M_LOG_2PI 1.8378770664093454835606594728112
 #endif

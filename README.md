@@ -16,8 +16,10 @@
 ```
 #从wave计算mfcc
 kaldi/src/featbin/compute-mfcc-feats --config=conf/mfcc.conf scp:data/test_yesno/wav.scp ark:- | kaldi/src/featbin/copy-feats --compress=true ark:- ark,scp:test_yesno.ark,test_yesno.scp
+
 #从mfcc计算cmvn
-kaldi/src/featbin/compute-cmvn-stats --spk2utt=ark:data/test_yesno/spk2utt scp:data/test_yesno/feats.scp ark,scp:cmvn_test_yesno.ark,cmvn_test_yesno.scp
+kaldi/src/featbin/compute-cmvn-stats --spk2utt=ark:data/test_yesno/spk2utt scp:test_yesno.scp ark,scp:cmvn_test_yesno.ark,cmvn_test_yesno.scp
+
 #应用cmvn到mfcc feature
 kaldi/src/featbin/apply-cmvn --utt2spk=ark:data/test_yesno/split1/1/utt2spk scp:cmvn_test_yesno.scp scp:test_yesno.scp ark:- | kaldi/src/featbin/add-deltas ark:- ark:feat.ark
 ```

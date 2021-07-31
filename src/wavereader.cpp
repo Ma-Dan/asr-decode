@@ -7,7 +7,8 @@ WaveReader::WaveReader()
 
 WaveReader::~WaveReader()
 {
-    SAFE_FREE(m_wavefile.data);
+    m_wavefile.data.clear();
+    m_waveData.clear();
 }
 
 void WaveReader::ReadWaveFile(const char* fileName)
@@ -24,8 +25,14 @@ void WaveReader::ReadWaveFile(const char* fileName)
 
     //读取数据
     int dataSize = m_wavefile.header.subchunk2_size;
-    m_wavefile.data = malloc(dataSize);
-    fread(&m_wavefile.data, dataSize, 1, fp);
+    m_wavefile.data.resize(dataSize/2);
+    fread(m_wavefile.data.data(), dataSize, 1, fp);
+
+    m_waveData.clear();
+    for(int i=0; i<dataSize/2; i++)
+    {
+        m_waveData.push_back(static_cast<BaseFloat>(m_wavefile.data[i]));
+    }
 
     fclose(fp);
 }

@@ -23,7 +23,7 @@ typedef struct tagWaveHeader
 typedef struct tagWaveFile
 {
     WaveHeader header;
-    void       *data;
+    vector<int16> data;
 } WaveFile, *P_WaveFile;
 
 class WaveReader
@@ -33,8 +33,10 @@ class WaveReader
         ~WaveReader();
         void ReadWaveFile(const char* fileName);
 
-    private:
         WaveFile m_wavefile;
+        vector<BaseFloat> m_waveData;
+
+    private:
 };
 
 #endif
